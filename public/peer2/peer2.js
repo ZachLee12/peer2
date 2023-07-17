@@ -2,9 +2,9 @@ import Peer from "peerjs";
 Peer.debug = true;
 const peerId = 'Zach'
 const peer2 = new Peer(peerId, {
-    host: "localhost",
+    host: "srldev.enterpriselab.ch",
     port: 9000,
-    path: "/",
+    path: '/'
 })
 
 //Peer (sending messages)
@@ -13,18 +13,31 @@ peer2.on('open', (id) => console.log(`${id} connected to PeerServer`))
 peer2.on("error", (error) => {
     console.error(error)
 })
+
+//DOM elements
+const videoEl = document.getElementById('video')
 const msgBtn = document.querySelector('.msg-btn')
 //Connect to a remote peer
-const conn = peer2.connect('Philipp')
-//DataConnection (receiving messages)
-conn.on('open', () => {
-    console.log(`%c[connection]: connection with ${conn.peer} established`, 'color:#35ce35;')
-})
-conn.on('close', () => {
-    console.log(`%c[connection]: connection with ${conn.peer} lost`, 'color:red;')
-})
 
-conn.on('data', data => console.log(`[message from ${conn.peer}]: ${data}`))
+//must wait for awhile for it connect successfully..
+setTimeout(() => {
+    const conn = peer2.connect('Philipp')
+    //DataConnection (receiving messages)
+    conn.on('open', () => {
+        console.log(`%c[connection]: connection with ${conn.peer} established`, 'color:#35ce35;')
+    })
+    conn.on('close', () => {
+        console.log(`%c[connection]: connection with ${conn.peer} lost`, 'color:red;')
+    })
+
+    conn.on('data', data => console.log(`[message from ${conn.peer}]: ${data}`))
+
+    conn.on('error', (err) => console.error(err))
+
+    msgBtn.addEventListener('click', () => {
+        conn.send('Hello Philipp, its me Zach')
+    })
+}, 500)
 
 //When a remote peer is connected to you
 peer2.on('connection', dataConnection => {
@@ -34,23 +47,30 @@ peer2.on('connection', dataConnection => {
 
 })
 
-msgBtn.addEventListener('click', () => {
-    conn.send('Hello Philipp, its me Zach')
-})
 
-
+//Call (Video-stream)
 peer2.on('call', (mediaConnection) => {
-    console.log('call')
-    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-        .then(stream => {
-            mediaConnection.answer(stream);
-            mediaConnection.on('stream', stream => {
-                const videoEl = document.getElementById('video')
-                videoEl.srcObject = stream
-                videoEl.play()
-            })
-            mediaConnection.on('close', () => console.log('Video call ended'))
-        })
+    console.log(`[call]: ${mediaConnection.peer} called.`)
+    mediaConnection.answer()
+    mediaConnection.on('stream', stream => {
+        videoEl.srcObject = stream
+        videoEl.play()
+        console.log(`[log]: Video stream started.`)
+    })
+
+    //PeerJS bug: https://github.com/peers/peerjs/issues/636
+    //'close' from mediaConnection is never fired.
+    mediaConnection.on('close', () => {
+        videoEl.pause();
+        videoEl.style.display = 'none'
+        console.log(`[log]: Video stream ended.`)
+    })
+    mediaConnection.on('error', (err) => {
+        console.error(err)
+    })
+
 })
+
+
 
 
