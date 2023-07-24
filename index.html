@@ -9,14 +9,23 @@
 </head>
 
 <body>
-  <div id="app"></div>
-  <script src="./public/peer2/peer2.js" type="module"></script>
-  <script type="module" src="/main.js"></script>
+  <div id="app">
+    <p class="peer-title">Peer 2: Zach</p>
+    <div class="btns-wrapper">
+      <button class="show-video-btn">Show Video</button>
+      <button class="send-message-btn">Send message</button>
+    </div>
+    <div class="position-div">
+      <video id="video"></video>
+    </div>
+    <div class="messages-wrapper">
+      <p class="messages-title">Messages</p>
 
-  <h1>Peer 2 (Receiver)</h1>
-  <p>This peer inititiates the connection. So you need to refresh this peer if connection is lost.</p>
-  <button class="msg-btn">Send Message (to Philipp)</button>
-  <video id="video" muted="muted"></video>
+    </div>
+
+    <link rel="stylesheet" href="./style.css">
+    <script src="./public/peer2.js" type="module"></script>
+    <script type="module" src="/main.js"></script>
 </body>
 
 </html>

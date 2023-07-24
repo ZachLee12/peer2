@@ -1,5 +1,7 @@
 import Peer from "peerjs";
-Peer.debug = true;
+import { addMessageFromPhilipp, addMessageFromZach, addTabSwitches } from "./TabSwitcher.js";
+
+const msgToSend = "Its me Zach"
 const peerId = 'Zach'
 const peer2 = new Peer(peerId, {
     host: "srldev.enterpriselab.ch",
@@ -16,12 +18,14 @@ peer2.on("error", (error) => {
 
 //DOM elements
 const videoEl = document.getElementById('video')
-const msgBtn = document.querySelector('.msg-btn')
+const sendMessageBtn = document.querySelector('.send-message-btn')
+
 //Connect to a remote peer
 
 //must wait for awhile for it connect successfully..
+let conn;
 setTimeout(() => {
-    const conn = peer2.connect('Philipp')
+    conn = peer2.connect('Philipp')
     //DataConnection (receiving messages)
     conn.on('open', () => {
         console.log(`%c[connection]: connection with ${conn.peer} established`, 'color:#35ce35;')
@@ -30,21 +34,23 @@ setTimeout(() => {
         console.log(`%c[connection]: connection with ${conn.peer} lost`, 'color:red;')
     })
 
-    conn.on('data', data => console.log(`[message from ${conn.peer}]: ${data}`))
+    conn.on('data', data => {
+        console.log(`[message from ${conn.peer}]: ${data}`)
+        conn.send(true)
+        addMessageFromPhilipp(data)
+    })
 
     conn.on('error', (err) => console.error(err))
 
-    msgBtn.addEventListener('click', () => {
-        conn.send('Hello Philipp, its me Zach')
+    sendMessageBtn.addEventListener('click', () => {
+        conn.send(msgToSend)
+        addMessageFromZach(msgToSend)
     })
 }, 500)
 
 //When a remote peer is connected to you
 peer2.on('connection', dataConnection => {
     console.log('[log]: ' + dataConnection.peer + " connected")
-    dataConnection.on('close', () => console.log(`%c[connection]: connection closed for ${dataConnection.peer}`, 'color:red;'))
-    dataConnection.on('data', data => console.log(`[message from ${dataConnection.peer}]: ${data}`))
-
 })
 
 
@@ -68,7 +74,6 @@ peer2.on('call', (mediaConnection) => {
     mediaConnection.on('error', (err) => {
         console.error(err)
     })
-
 })
 
 
